@@ -7,7 +7,12 @@ function render(node: string | VNode): Node {
 
 	const el = document.createElement(node.tag);
 	for (const [key, value] of Object.entries(node.props)) {
-		el.setAttribute(key, String(value));
+		if (key.startsWith("on")) {
+			// @ts-ignore
+			el.addEventListener(key.slice(2).toLowerCase(), value);
+		} else {
+			el.setAttribute(key, String(value));
+		}
 	}
 	for (const child of node.children) {
 		el.appendChild(render(child));
