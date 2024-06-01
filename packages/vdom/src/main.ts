@@ -1,5 +1,10 @@
 import { createApp } from "./app";
+import type { Component } from "./component";
 import { h } from "./h";
+
+const Button = ((props, children) => {
+	return h("button", props, children);
+}) satisfies Component<{ onClick: () => void }>;
 
 const target = document.getElementById("app");
 if (target) {
@@ -9,7 +14,7 @@ if (target) {
 			"Hello, ",
 			h("i", { onClick: () => alert("world") }, ["world"]),
 			h(
-				"button",
+				Button,
 				{
 					onClick: () => {
 						count++;

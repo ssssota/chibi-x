@@ -1,3 +1,4 @@
+import { createApp } from "./app";
 import type { VNode } from "./vnode";
 
 function patchAttrs(
@@ -45,6 +46,16 @@ export function patch(
 	newNode: VNode | string | undefined,
 	index = 0,
 ) {
+	console.log(
+		"parent:",
+		parent,
+		"\noldNode:",
+		oldNode,
+		"\nnewNode:",
+		newNode,
+		"\nindex:",
+		index,
+	);
 	if (newNode === undefined) {
 		parent.removeChild(parent.childNodes[index]);
 		return;
@@ -53,7 +64,11 @@ export function patch(
 		patchStringNode(parent, oldNode, newNode, index);
 		return;
 	}
-	patchElementNode(parent, oldNode, newNode, index);
+	if (typeof newNode.type === "string") {
+		patchElementNode(parent, oldNode, newNode, index);
+		return;
+	}
+	patchComponentNode(parent, oldNode, newNode, index);
 }
 
 function patchStringNode(
@@ -79,8 +94,9 @@ function patchElementNode(
 	newNode: VNode,
 	index: number,
 ) {
+	if (typeof newNode.type !== "string") throw new Error("Invalid node type");
 	if (oldNode === undefined) {
-		const el = document.createElement(newNode.tag);
+		const el = document.createElement(newNode.type);
 		patchAttrs(el, {}, newNode.props);
 		patchChildren(el, [], newNode.children);
 		parent.appendChild(el);
@@ -88,11 +104,11 @@ function patchElementNode(
 	}
 	const el = parent.childNodes[index];
 	if (typeof oldNode === "string") {
-		parent.replaceChild(document.createElement(newNode.tag), el);
+		parent.replaceChild(document.createElement(newNode.type), el);
 		return;
 	}
-	if (oldNode.tag !== newNode.tag) {
-		const newEl = document.createElement(newNode.tag);
+	if (oldNode.type !== newNode.type) {
+		const newEl = document.createElement(newNode.type);
 		patchAttrs(newEl, {}, newNode.props);
 		patchChildren(newEl, [], newNode.children);
 		parent.replaceChild(newEl, el);
@@ -100,4 +116,36 @@ function patchElementNode(
 	}
 	patchAttrs(el as HTMLElement, oldNode.props, newNode.props);
 	patchChildren(el, oldNode.children, newNode.children);
+}
+
+function patchComponentNode(
+	parent: Node,
+	oldNode: VNode | string | undefined,
+	newNode: VNode,
+	index: number,
+) {
+	if (typeof newNode.type === "string") throw new Error("Invalid node type");
+	if (oldNode === undefined) {
+		const app = createApp(newNode.type);
+		app.mount(parent, newNode.props, newNode.children);
+		newNode._app = app;
+		return;
+	}
+	if (typeof oldNode === "string") {
+		parent.removeChild(parent.childNodes[index]);
+		const app = createApp(newNode.type);
+		app.mount(parent, newNode.props, newNode.children);
+		newNode._app = app;
+		return;
+	}
+	if (oldNode.type === newNode.type) {
+		if (!oldNode._app) throw new Error("Missing app");
+		oldNode._app.rerender(newNode.props, newNode.children);
+		newNode._app = oldNode._app;
+		return;
+	}
+	parent.removeChild(parent.childNodes[index]);
+	const app = createApp(newNode.type);
+	app.mount(parent, newNode.props, newNode.children);
+	newNode._app = app;
 }

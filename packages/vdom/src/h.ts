@@ -1,9 +1,9 @@
-import type { VNode } from "./vnode";
+import type { VNode, VNodeType } from "./vnode";
 
-export function h(
-	tag: string,
-	props: Record<string, unknown>,
+export function h<Props extends Record<string, unknown>>(
+	type: VNodeType<Props>,
+	props: Props,
 	children: (string | VNode)[],
 ): VNode {
-	return { tag, props, children };
+	return { type, props, children };
 }
