@@ -24,9 +24,20 @@ function render(node: string | VNode): Node {
 export function createApp<Props extends Record<string, unknown>>(
 	root: Component<Props>,
 ) {
+	let _target: HTMLElement;
+	function _render(props: Props) {
+		const vnode = root(props);
+		const el = render(vnode);
+		_target.appendChild(el);
+	}
 	return {
 		mount(target: HTMLElement, props: Props) {
-			target.appendChild(render(root(props)));
+			_target = target;
+			_render(props);
+		},
+		rerender(props: Props) {
+			_target.textContent = "";
+			_render(props);
 		},
 	};
 }
