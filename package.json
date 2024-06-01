@@ -1,0 +1,9 @@
+{
+	"packageManager": "pnpm@9.1.4",
+	"scripts": {
+		"fmt": "biome check --apply ."
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.7.3"
+	}
+}
