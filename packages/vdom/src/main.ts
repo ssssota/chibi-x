@@ -3,11 +3,11 @@ import { h } from "./h";
 
 const target = document.getElementById("app");
 if (target) {
-	const app = createApp(
+	const app = createApp(() =>
 		h("h1", { class: "title" }, [
 			"Hello, ",
 			h("i", { onClick: () => alert("world") }, ["world"]),
 		]),
 	);
-	app.mount(target);
+	app.mount(target, {});
 }

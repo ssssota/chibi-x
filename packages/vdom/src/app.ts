@@ -1,3 +1,4 @@
+import type { Component } from "./component";
 import type { VNode } from "./vnode";
 
 function render(node: string | VNode): Node {
@@ -20,10 +21,12 @@ function render(node: string | VNode): Node {
 	return el;
 }
 
-export function createApp(root: VNode) {
+export function createApp<Props extends Record<string, unknown>>(
+	root: Component<Props>,
+) {
 	return {
-		mount(target: HTMLElement) {
-			target.appendChild(render(root));
+		mount(target: HTMLElement, props: Props) {
+			target.appendChild(render(root(props)));
 		},
 	};
 }
