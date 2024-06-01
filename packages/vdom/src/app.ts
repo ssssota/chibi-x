@@ -1,17 +1,24 @@
 import type { VNode } from "./vnode";
 
-function render(node: string | VNode): string {
-	if (typeof node === "string") return node;
+function render(node: string | VNode): Node {
+	if (typeof node === "string") {
+		return document.createTextNode(node);
+	}
 
-	return `<${node.tag} ${Object.entries(node.props)
-		.map(([key, value]) => `${key}=${JSON.stringify(String(value))}`)
-		.join(" ")}>${node.children.map(render).join("")}</${node.tag}>`;
+	const el = document.createElement(node.tag);
+	for (const [key, value] of Object.entries(node.props)) {
+		el.setAttribute(key, String(value));
+	}
+	for (const child of node.children) {
+		el.appendChild(render(child));
+	}
+	return el;
 }
 
 export function createApp(root: VNode) {
 	return {
 		mount(target: HTMLElement) {
-			target.innerHTML = render(root);
+			target.appendChild(render(root));
 		},
 	};
 }
