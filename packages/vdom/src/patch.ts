@@ -29,7 +29,7 @@ function patchAttrs(
 }
 
 function patchChildren(
-	parent: HTMLElement,
+	parent: Node,
 	oldChildren: (string | VNode)[],
 	newChildren: (string | VNode)[],
 ) {
@@ -46,48 +46,58 @@ export function patch(
 	index = 0,
 ) {
 	if (newNode === undefined) {
-		if (oldNode === undefined) return;
 		parent.removeChild(parent.childNodes[index]);
 		return;
 	}
+	if (typeof newNode === "string") {
+		patchStringNode(parent, oldNode, newNode, index);
+		return;
+	}
+	patchElementNode(parent, oldNode, newNode, index);
+}
+
+function patchStringNode(
+	parent: Node,
+	oldNode: VNode | string | undefined,
+	newNode: string,
+	index: number,
+) {
+	if (oldNode === newNode) return;
 	if (oldNode === undefined) {
-		if (typeof newNode === "string") {
-			parent.appendChild(document.createTextNode(newNode));
-			return;
-		}
-		const newEl = document.createElement(newNode.tag);
-		patchAttrs(newEl, {}, newNode.props);
-		patchChildren(newEl, [], newNode.children);
-		parent.appendChild(newEl);
+		parent.appendChild(document.createTextNode(newNode));
+		return;
+	}
+	parent.replaceChild(
+		document.createTextNode(newNode),
+		parent.childNodes[index],
+	);
+}
+
+function patchElementNode(
+	parent: Node,
+	oldNode: VNode | string | undefined,
+	newNode: VNode,
+	index: number,
+) {
+	if (oldNode === undefined) {
+		const el = document.createElement(newNode.tag);
+		patchAttrs(el, {}, newNode.props);
+		patchChildren(el, [], newNode.children);
+		parent.appendChild(el);
 		return;
 	}
 	const el = parent.childNodes[index];
 	if (typeof oldNode === "string") {
-		if (typeof newNode === "string") {
-			if (oldNode !== newNode) {
-				el.replaceWith(document.createTextNode(newNode));
-			}
-			return;
-		}
-		parent.removeChild(el);
-		patch(parent, undefined, newNode, index);
+		parent.replaceChild(document.createElement(newNode.tag), el);
 		return;
 	}
-	if (typeof newNode === "string") {
-		el.replaceWith(document.createTextNode(newNode));
-		return;
-	}
-	if (!(el instanceof HTMLElement)) throw new Error("unexpected node");
-	const newTag = newNode.tag.toLowerCase();
-	if (
-		oldNode.tag.toLowerCase() !== newTag ||
-		el.tagName.toLowerCase() !== newTag
-	) {
-		const newEl = document.createElement(newTag);
+	if (oldNode.tag !== newNode.tag) {
+		const newEl = document.createElement(newNode.tag);
 		patchAttrs(newEl, {}, newNode.props);
 		patchChildren(newEl, [], newNode.children);
+		parent.replaceChild(newEl, el);
 		return;
 	}
-	patchAttrs(el, oldNode.props, newNode.props);
+	patchAttrs(el as HTMLElement, oldNode.props, newNode.props);
 	patchChildren(el, oldNode.children, newNode.children);
 }
