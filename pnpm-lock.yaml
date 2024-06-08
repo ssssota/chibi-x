@@ -13,6 +13,10 @@ importers:
         version: 1.7.3
 
   packages/vdom:
+    dependencies:
+      '@chibi-x/vdom':
+        specifier: workspace:*
+        version: 'link:'
     devDependencies:
       vite:
         specifier: ^5.2.12

@@ -1,8 +1,14 @@
 {
+	"name": "@chibi-x/vdom",
+	"exports": {
+		"./jsx-runtime": "./src/jsx-runtime.ts",
+		"./jsx-dev-runtime": "./src/jsx-runtime.ts"
+	},
 	"scripts": {
 		"dev": "vite",
 		"build": "vite build",
 		"serve": "vite preview"
 	},
+	"dependencies": { "@chibi-x/vdom": "workspace:*" },
 	"devDependencies": { "vite": "^5.2.12" }
 }

@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+    "module": "esnext",
+    "lib": ["esnext", "DOM"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "@chibi-x/vdom"
+  }
+}
